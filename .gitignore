@@ -32,10 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
-
 
 # typescript
 *.tsbuildinfo
@@ -48,10 +48,23 @@ dev.log
 dev.out.log
 test
 prompt
-
 server.log
-# Skills directory
+
+# Skills directory (sandbox-only)
 /skills/
 
-# Mini-services (not deployed to Vercel)
+# Mini-services (not deployed to Vercel — Vercel is serverless)
 /mini-services/
+
+# Local SQLite database
+/db/
+*.db
+*.db-journal
+
+# Sandbox tooling artifacts (not part of the app)
+/tool-results/
+/agent-ctx/
+/.zscripts/
+
+# Worklog (internal)
+worklog.md
