@@ -63,7 +63,90 @@ export interface Banner {
   position: string;
   isActive: boolean;
   bgColor: string;
+  badge?: string;
+  cta?: string;
+  category?: string;
 }
+
+export const banners: Banner[] = [
+  {
+    id: 'ban-1',
+    title: 'Mega Electronics Sale',
+    subtitle: 'Up to 70% off on top electronics brands — Smartphones, Laptops & Audio',
+    image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1600&h=600&fit=crop',
+    link: '/products?category=electronics',
+    position: 'home',
+    isActive: true,
+    bgColor: 'from-violet-900/80 via-violet-800/70 to-purple-900/80',
+    badge: 'Limited Time',
+    cta: 'Shop Electronics',
+    category: 'electronics',
+  },
+  {
+    id: 'ban-2',
+    title: 'Fashion Fiesta',
+    subtitle: 'New season, new styles — Flat 50% off on premium fashion',
+    image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&h=600&fit=crop',
+    link: '/products?category=fashion',
+    position: 'home',
+    isActive: true,
+    bgColor: 'from-rose-900/80 via-pink-800/70 to-fuchsia-900/80',
+    badge: 'New Arrivals',
+    cta: 'Explore Fashion',
+    category: 'fashion',
+  },
+  {
+    id: 'ban-3',
+    title: 'Home Makeover Festival',
+    subtitle: 'Transform your home with up to 60% off on decor & appliances',
+    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&h=600&fit=crop',
+    link: '/products?category=home-kitchen',
+    position: 'home',
+    isActive: true,
+    bgColor: 'from-amber-900/80 via-orange-800/70 to-red-900/80',
+    badge: 'Festive Special',
+    cta: 'Shop Home',
+    category: 'home-kitchen',
+  },
+  {
+    id: 'ban-4',
+    title: 'Beauty Bonanza',
+    subtitle: 'Premium beauty & grooming products at unbeatable prices',
+    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1600&h=600&fit=crop',
+    link: '/products?category=beauty',
+    position: 'home',
+    isActive: true,
+    bgColor: 'from-pink-900/80 via-fuchsia-800/70 to-purple-900/80',
+    badge: 'Trending Now',
+    cta: 'Shop Beauty',
+    category: 'beauty',
+  },
+  {
+    id: 'ban-5',
+    title: 'Flash Sale — 4 Hours Only',
+    subtitle: 'Grab lightning deals before they are gone! Up to 80% off',
+    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1600&h=600&fit=crop',
+    link: '/products?tag=flash-sale',
+    position: 'home',
+    isActive: true,
+    bgColor: 'from-red-900/85 via-rose-800/75 to-orange-900/80',
+    badge: '⚡ Flash Sale',
+    cta: 'Grab Deals',
+  },
+  {
+    id: 'ban-6',
+    title: 'Sports Season Sale',
+    subtitle: 'Gear up with up to 55% off on sports & fitness essentials',
+    image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1600&h=600&fit=crop',
+    link: '/products?category=sports-fitness',
+    position: 'home',
+    isActive: true,
+    bgColor: 'from-emerald-900/80 via-teal-800/70 to-cyan-900/80',
+    badge: 'Get Active',
+    cta: 'Shop Sports',
+    category: 'sports-fitness',
+  },
+];
 
 export interface Review {
   id: string;
@@ -173,14 +256,7 @@ export const sellers: Seller[] = [
 ];
 
 // ==================== BANNERS ====================
-export const banners: Banner[] = [
-  { id: 'ban-1', title: 'Mega Electronics Sale', subtitle: 'Up to 70% off on top electronics brands', image: 'https://picsum.photos/seed/banner1/1200/400', link: '/products?category=electronics', position: 'home', isActive: true, bgColor: 'from-violet-600 to-purple-800' },
-  { id: 'ban-2', title: 'Fashion Fiesta', subtitle: 'New season, new styles - Flat 50% off', image: 'https://picsum.photos/seed/banner2/1200/400', link: '/products?category=fashion', position: 'home', isActive: true, bgColor: 'from-rose-500 to-pink-700' },
-  { id: 'ban-3', title: 'Home Makeover Festival', subtitle: 'Transform your home with 60% off', image: 'https://picsum.photos/seed/banner3/1200/400', link: '/products?category=home-kitchen', position: 'home', isActive: true, bgColor: 'from-amber-500 to-orange-700' },
-  { id: 'ban-4', title: 'Beauty Bonanza', subtitle: 'Premium beauty at unbeatable prices', image: 'https://picsum.photos/seed/banner4/1200/400', link: '/products?category=beauty', position: 'home', isActive: true, bgColor: 'from-pink-500 to-fuchsia-700' },
-  { id: 'ban-5', title: 'Flash Sale - 4 Hours Only', subtitle: 'Grab deals before they are gone!', image: 'https://picsum.photos/seed/banner5/1200/400', link: '/products?tag=flash-sale', position: 'home', isActive: true, bgColor: 'from-red-600 to-red-800' },
-  { id: 'ban-6', title: 'Sports Season Sale', subtitle: 'Gear up with up to 55% off', image: 'https://picsum.photos/seed/banner6/1200/400', link: '/products?category=sports-fitness', position: 'home', isActive: true, bgColor: 'from-emerald-500 to-teal-700' },
-];
+// (banners are defined above, near the Banner interface)
 
 // ==================== PRODUCTS ====================
 const productImages = (slug: string) => [

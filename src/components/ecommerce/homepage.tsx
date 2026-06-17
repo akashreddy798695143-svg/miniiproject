@@ -370,6 +370,7 @@ export default function Homepage() {
 
   // ─── Hero Carousel State ─────────────────────────────────────────────────
   const [heroIndex, setHeroIndex] = useState(0)
+  const [heroPaused, setHeroPaused] = useState(false)
   const activeBanners = useMemo(() => banners.filter(b => b.isActive), [])
 
   const nextSlide = useCallback(() => {
@@ -381,9 +382,10 @@ export default function Homepage() {
   }, [activeBanners.length])
 
   useEffect(() => {
-    const timer = setInterval(nextSlide, 3000)
+    if (heroPaused) return
+    const timer = setInterval(nextSlide, 5000)
     return () => clearInterval(timer)
-  }, [nextSlide])
+  }, [nextSlide, heroPaused])
 
   // ─── Flash Sale Countdown ────────────────────────────────────────────────
   const [timeLeft, setTimeLeft] = useState({ hours: 6, minutes: 0, seconds: 0 })
@@ -442,54 +444,90 @@ export default function Homepage() {
 
         {/* ═══════════════════ 1. HERO BANNER CAROUSEL ═══════════════════ */}
         <AnimatedSection className="pt-4">
-          <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl shadow-orange-500/10">
-            <div className="relative h-[220px] sm:h-[320px] md:h-[400px] lg:h-[440px]">
+          <div
+            className="relative w-full rounded-3xl overflow-hidden shadow-2xl shadow-zinc-900/20 ring-1 ring-zinc-900/5"
+            onMouseEnter={() => setHeroPaused(true)}
+            onMouseLeave={() => setHeroPaused(false)}
+          >
+            <div className="relative h-[260px] sm:h-[360px] md:h-[440px] lg:h-[480px]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={heroIndex}
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.6, ease: 'easeInOut' }}
-                  className={`absolute inset-0 bg-gradient-to-r ${activeBanners[heroIndex]?.bgColor ?? 'from-orange-500 to-amber-600'}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.7, ease: 'easeInOut' }}
+                  className="absolute inset-0"
                 >
-                  {/* Background pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white/30 blur-3xl -translate-y-1/2 translate-x-1/3" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/20 blur-2xl translate-y-1/3 -translate-x-1/4" />
-                  </div>
+                  {/* Background image */}
+                  <motion.img
+                    src={activeBanners[heroIndex]?.image}
+                    alt={activeBanners[heroIndex]?.title}
+                    initial={{ scale: 1.1 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 7, ease: 'easeOut' }}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  {/* Gradient overlay for readability */}
+                  <div className={`absolute inset-0 bg-gradient-to-r ${activeBanners[heroIndex]?.bgColor ?? 'from-zinc-900/80 to-zinc-900/60'}`} />
+                  {/* Subtle bottom fade */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-                  <div className="relative h-full flex items-center px-8 sm:px-12 md:px-16">
-                    <div className="max-w-xl space-y-4">
+                  {/* Content */}
+                  <div className="relative h-full flex items-center px-6 sm:px-12 md:px-16 lg:px-20">
+                    <div className="max-w-xl space-y-3 sm:space-y-4">
+                      {activeBanners[heroIndex]?.badge && (
+                        <motion.span
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.15, duration: 0.5 }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-semibold tracking-wide uppercase shadow-lg"
+                        >
+                          <Sparkles size={12} />
+                          {activeBanners[heroIndex].badge}
+                        </motion.span>
+                      )}
                       <motion.h1
                         initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-white leading-tight drop-shadow-lg"
+                        transition={{ delay: 0.25, duration: 0.5 }}
+                        className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.05] drop-shadow-2xl"
                       >
                         {activeBanners[heroIndex]?.title}
                       </motion.h1>
                       <motion.p
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.35, duration: 0.5 }}
-                        className="text-sm sm:text-base md:text-lg text-white/90 font-medium"
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                        className="text-sm sm:text-base md:text-lg text-white/95 font-medium drop-shadow-lg max-w-lg"
                       >
                         {activeBanners[heroIndex]?.subtitle}
                       </motion.p>
                       <motion.div
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5, duration: 0.5 }}
+                        transition={{ delay: 0.55, duration: 0.5 }}
+                        className="flex flex-wrap items-center gap-3 pt-1"
                       >
                         <Button
                           size="lg"
-                          className="bg-white text-gray-900 hover:bg-gray-100 shadow-xl hover:shadow-2xl transition-all font-bold gap-2 rounded-full px-8"
-                          onClick={() => navigate('products')}
+                          className="bg-white text-zinc-900 hover:bg-zinc-100 shadow-2xl hover:shadow-white/20 hover:scale-105 transition-all font-bold gap-2 rounded-full px-7 h-12"
+                          onClick={() =>
+                            navigate(
+                              'products',
+                              activeBanners[heroIndex]?.category
+                                ? { category: activeBanners[heroIndex].category }
+                                : undefined
+                            )
+                          }
                         >
-                          Shop Now
+                          {activeBanners[heroIndex]?.cta ?? 'Shop Now'}
                           <ArrowRight size={18} />
                         </Button>
+                        <div className="flex items-center gap-2 text-white/90 text-xs sm:text-sm font-medium drop-shadow">
+                          <Truck size={16} />
+                          <span>Free Delivery over ₹500</span>
+                        </div>
                       </motion.div>
                     </div>
                   </div>
@@ -500,14 +538,14 @@ export default function Homepage() {
             {/* Arrows */}
             <button
               onClick={prevSlide}
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/40 transition-all"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 size-11 rounded-full bg-white/25 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/50 hover:scale-110 transition-all shadow-xl"
               aria-label="Previous slide"
             >
               <ChevronLeft size={22} />
             </button>
             <button
               onClick={nextSlide}
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/40 transition-all"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 size-11 rounded-full bg-white/25 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/50 hover:scale-110 transition-all shadow-xl"
               aria-label="Next slide"
             >
               <ChevronRight size={22} />
@@ -520,11 +558,16 @@ export default function Homepage() {
                   key={i}
                   onClick={() => setHeroIndex(i)}
                   className={`h-2 rounded-full transition-all duration-300 ${
-                    i === heroIndex ? 'w-8 bg-white' : 'w-2 bg-white/50'
+                    i === heroIndex ? 'w-8 bg-white shadow-lg' : 'w-2 bg-white/50 hover:bg-white/70'
                   }`}
                   aria-label={`Go to slide ${i + 1}`}
                 />
               ))}
+            </div>
+
+            {/* Slide counter */}
+            <div className="absolute top-4 right-4 z-20 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-xs font-medium tabular-nums">
+              {heroIndex + 1} / {activeBanners.length}
             </div>
           </div>
         </AnimatedSection>
