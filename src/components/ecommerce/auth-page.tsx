@@ -35,7 +35,11 @@ import {
   ShieldCheck,
   ShoppingBag,
   Sparkles,
+  Smartphone,
+  RefreshCw,
+  CheckCircle2,
 } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 // ── User data type ────────────────────────────────────────────────────
 interface UserData {
@@ -789,13 +793,17 @@ function OtpForm({
   onVerify: (userData: UserData) => void
   onBack: () => void
 }) {
+  const { toast } = useToast()
   const [otp, setOtp] = useState('')
   const [phone, setPhone] = useState('')
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [resendTimer, setResendTimer] = useState(30)
+  const [isSending, setIsSending] = useState(false)
+  const [resendTimer, setResendTimer] = useState(0)
   const [otpSent, setOtpSent] = useState(false)
   const [error, setError] = useState('')
+  const [demoOtp, setDemoOtp] = useState<string>('')
+  const [sentPhone, setSentPhone] = useState('')
 
   useEffect(() => {
     if (resendTimer <= 0) return
@@ -803,35 +811,108 @@ function OtpForm({
     return () => clearTimeout(timer)
   }, [resendTimer])
 
-  const handleSendOtp = () => {
-    if (phone.length >= 10) {
-      setOtpSent(true)
-      setResendTimer(30)
+  const handleSendOtp = async () => {
+    setError('')
+    const digits = phone.replace(/\D/g, '')
+    const ten = digits.startsWith('91') && digits.length === 12
+      ? digits.slice(2)
+      : digits.startsWith('0') ? digits.slice(1) : digits
+    if (!/^[6-9]\d{9}$/.test(ten)) {
+      setError('Please enter a valid 10-digit mobile number')
+      return
     }
-  }
 
-  const handleVerify = () => {
-    if (otp.length === 6) {
-      setIsLoading(true)
-      // Simulate OTP verification and login with phone-based user
-      setTimeout(() => {
-        setIsLoading(false)
-        onVerify({
-          id: 'user-phone-' + Date.now(),
-          name: name || phone,
-          email: '',
-          phone: phone,
-          role: 'customer',
-          walletBalance: 0,
-          rewardPoints: 0,
+    setIsSending(true)
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, name, purpose: 'login' }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to send OTP')
+        toast({
+          title: 'Could not send OTP',
+          description: data.error || 'Please try again.',
+          variant: 'destructive',
         })
-      }, 1000)
+        return
+      }
+
+      setOtpSent(true)
+      setSentPhone(data.phone || phone)
+      setResendTimer(30)
+      setOtp('')
+
+      if (data.demo && data.otp) {
+        setDemoOtp(data.otp)
+        toast({
+          title: 'OTP sent to your mobile',
+          description: `Demo mode: Your OTP is ${data.otp}. (No SMS gateway configured — add MSG91/Twilio keys to send real SMS.)`,
+        })
+      } else {
+        setDemoOtp('')
+        toast({
+          title: 'OTP sent',
+          description: `A 6-digit code was sent to ${data.phone || phone} via SMS.`,
+        })
+      }
+    } catch {
+      setError('Network error. Please try again.')
+      toast({
+        title: 'Network error',
+        description: 'Could not reach the server. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSending(false)
     }
   }
 
-  const handleResend = () => {
-    setResendTimer(30)
-    setOtp('')
+  const handleVerify = async () => {
+    if (otp.length !== 6) return
+    setError('')
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp, name, purpose: 'login' }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'OTP verification failed')
+        toast({
+          title: 'Verification failed',
+          description: data.error || 'Please check your OTP and try again.',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      toast({
+        title: 'Welcome to ShopZone!',
+        description: 'Logged in successfully via mobile OTP.',
+      })
+      onVerify(data.user)
+    } catch {
+      setError('Network error. Please try again.')
+      toast({
+        title: 'Network error',
+        description: 'Could not reach the server. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleResend = async () => {
+    if (resendTimer > 0) return
+    await handleSendOtp()
   }
 
   return (
@@ -840,8 +921,8 @@ function OtpForm({
         <h2 className="text-2xl font-bold text-foreground">OTP Verification</h2>
         <p className="text-sm text-muted-foreground mt-1">
           {otpSent
-            ? `We've sent a 6-digit code to ${phone}`
-            : 'Enter your phone number to receive an OTP'}
+            ? `We've sent a 6-digit code to ${sentPhone || phone}`
+            : 'Enter your phone number to receive an OTP via SMS'}
         </p>
       </div>
 
@@ -880,15 +961,41 @@ function OtpForm({
           )}
           <Button
             onClick={handleSendOtp}
-            disabled={phone.length < 10}
+            disabled={isSending || phone.replace(/\D/g, '').length < 10}
             className="w-full h-11 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-semibold"
           >
-            Send OTP
-            <ArrowRight className="w-4 h-4 ml-2" />
+            {isSending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                Sending OTP…
+              </>
+            ) : (
+              <>
+                Send OTP
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </>
+            )}
           </Button>
         </div>
       ) : (
         <div className="space-y-6">
+          {demoOtp && (
+            <div className="rounded-xl border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700/40 p-4 flex items-start gap-3">
+              <Smartphone className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+              <div className="text-sm flex-1">
+                <p className="font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                  OTP sent to your mobile
+                </p>
+                <p className="text-amber-800/80 dark:text-amber-300/70 mt-0.5">
+                  Demo mode (no SMS gateway configured). Your one-time password is:
+                </p>
+                <p className="text-2xl font-bold tracking-[0.4em] text-amber-700 dark:text-amber-300 mt-1 font-mono">
+                  {demoOtp}
+                </p>
+              </div>
+            </div>
+          )}
           <div className="space-y-3">
             <Label className="text-center block">Enter 6-digit OTP</Label>
             <div className="flex justify-center">
@@ -941,9 +1048,20 @@ function OtpForm({
               <button
                 type="button"
                 onClick={handleResend}
-                className="text-sm text-orange-600 hover:text-orange-700 dark:text-orange-400 font-semibold"
+                disabled={isSending}
+                className="text-sm text-orange-600 hover:text-orange-700 dark:text-orange-400 font-semibold inline-flex items-center gap-1.5 disabled:opacity-50"
               >
-                Resend OTP
+                {isSending ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    Resending…
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Resend OTP
+                  </>
+                )}
               </button>
             )}
           </div>
