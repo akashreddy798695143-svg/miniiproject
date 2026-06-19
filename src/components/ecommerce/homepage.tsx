@@ -796,7 +796,7 @@ export default function Homepage() {
                 >
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden ring-2 ring-orange-100 dark:ring-orange-900/50 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 group-hover:ring-orange-300 dark:group-hover:ring-orange-700 transition-all">
                     <img
-                      src={cat.image || ''}
+                      src={cat.image || undefined}
                       alt={cat.name}
                       loading="lazy"
                       className="w-full h-full object-cover"
